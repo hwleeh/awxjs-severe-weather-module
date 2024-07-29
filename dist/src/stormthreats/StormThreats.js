@@ -4,56 +4,14 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
 var _MapSourceModule = _interopRequireDefault(require("@aerisweather/javascript-sdk/dist/modules/MapSourceModule"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var __extends = void 0 && (void 0).__extends || function () {
-  var extendStatics = function (d, b) {
-    extendStatics = Object.setPrototypeOf || {
-      __proto__: []
-    } instanceof Array && function (d, b) {
-      d.__proto__ = b;
-    } || function (d, b) {
-      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    };
-
-    return extendStatics(d, b);
-  };
-
-  return function (d, b) {
-    extendStatics(d, b);
-
-    function __() {
-      this.constructor = d;
-    }
-
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-}();
-
-var StormThreats =
-/** @class */
-function (_super) {
-  __extends(StormThreats, _super);
-
-  function StormThreats() {
-    return _super !== null && _super.apply(this, arguments) || this;
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+class StormThreats extends _MapSourceModule.default {
+  get id() {
+    return 'stormthreats';
   }
-
-  Object.defineProperty(StormThreats.prototype, "id", {
-    get: function () {
-      return 'stormthreats';
-    },
-    enumerable: false,
-    configurable: true
-  });
-
-  StormThreats.prototype.source = function () {
-    var _this = this;
-
-    var properties = {
+  source() {
+    const properties = {
       root: 'features',
       path: 'geometry'
     };
@@ -61,44 +19,52 @@ function (_super) {
       type: 'vector',
       requiresBounds: true,
       data: {
-        service: function () {
-          return _this.request;
-        },
-        properties: properties
+        service: () => this.request,
+        properties
       },
       style: {
-        polygon: function () {
-          return {
-            fill: {
-              color: '#ffa500',
-              opacity: 0.65
-            }
-          };
-        }
+        polygon: () => ({
+          fill: {
+            color: '#ffa500',
+            opacity: 0.85
+          }
+        })
       }
     };
-  };
-
-  StormThreats.prototype.controls = function () {
+  }
+  controls() {
     return {
       value: this.id,
-      title: 'Storm Threats',
+      title: 'Storm Zones',
       controls: {
         settings: [{
           type: 'opacity'
         }]
-      }
+      },
+      filter: true,
+      multiselect: false,
+      segments: [{
+        value: 'threat',
+        title: 'Threatening'
+      }, {
+        value: 'hail',
+        title: 'Hail'
+      }, {
+        value: 'rotating',
+        title: 'Rotating'
+      }, {
+        value: 'tornado',
+        title: 'Tornadic'
+      }, {
+        value: 'all',
+        title: 'All Storms'
+      }]
     };
-  };
-
-  StormThreats.prototype.onInit = function () {
-    var request = this.account.api().endpoint('stormcells/summary').format('geojson').limit(1).filter('threat,geo');
+  }
+  onInit() {
+    const request = this.account.api().endpoint('stormcells/summary').format('geojson').limit(1).filter('geo');
     this.request = request;
-  };
-
-  return StormThreats;
-}(_MapSourceModule.default);
-
-var _default = StormThreats;
-exports.default = _default;
+  }
+}
+var _default = exports.default = StormThreats;
 module.exports = exports.default;

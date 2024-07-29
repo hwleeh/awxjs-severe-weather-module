@@ -4,56 +4,14 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
 var _MapSourceModule = _interopRequireDefault(require("@aerisweather/javascript-sdk/dist/modules/MapSourceModule"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var __extends = void 0 && (void 0).__extends || function () {
-  var extendStatics = function (d, b) {
-    extendStatics = Object.setPrototypeOf || {
-      __proto__: []
-    } instanceof Array && function (d, b) {
-      d.__proto__ = b;
-    } || function (d, b) {
-      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    };
-
-    return extendStatics(d, b);
-  };
-
-  return function (d, b) {
-    extendStatics(d, b);
-
-    function __() {
-      this.constructor = d;
-    }
-
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-}();
-
-var LightningThreats =
-/** @class */
-function (_super) {
-  __extends(LightningThreats, _super);
-
-  function LightningThreats() {
-    return _super !== null && _super.apply(this, arguments) || this;
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+class LightningThreats extends _MapSourceModule.default {
+  get id() {
+    return 'lightningthreats';
   }
-
-  Object.defineProperty(LightningThreats.prototype, "id", {
-    get: function () {
-      return 'lightningthreats';
-    },
-    enumerable: false,
-    configurable: true
-  });
-
-  LightningThreats.prototype.source = function () {
-    var _this = this;
-
-    var properties = {
+  source() {
+    const properties = {
       root: 'features',
       path: 'geometry'
     };
@@ -61,44 +19,34 @@ function (_super) {
       type: 'vector',
       requreBounds: true,
       data: {
-        service: function () {
-          return _this.request;
-        },
-        properties: properties
+        service: () => this.request,
+        properties
       },
       style: {
-        polygon: function () {
-          return {
-            fill: {
-              color: '#FFDB00',
-              opacity: 0.6
-            }
-          };
-        }
+        polygon: () => ({
+          fill: {
+            color: '#f3e9b2',
+            opacity: 0.85
+          }
+        })
       }
     };
-  };
-
-  LightningThreats.prototype.controls = function () {
+  }
+  controls() {
     return {
       value: this.id,
-      title: 'Lightning Threats',
+      title: 'Lightning Zones',
       controls: {
         settings: [{
           type: 'opacity'
         }]
       }
     };
-  };
-
-  LightningThreats.prototype.onInit = function () {
-    var request = this.account.api().endpoint('lightning/summary').format('geojson').filter('threat,geo').from('-15minutes');
+  }
+  onInit() {
+    const request = this.account.api().endpoint('lightning/summary').format('geojson').filter('geo').from('-15minutes');
     this.request = request;
-  };
-
-  return LightningThreats;
-}(_MapSourceModule.default);
-
-var _default = LightningThreats;
-exports.default = _default;
+  }
+}
+var _default = exports.default = LightningThreats;
 module.exports = exports.default;

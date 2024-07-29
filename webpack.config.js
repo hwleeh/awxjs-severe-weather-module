@@ -2,7 +2,6 @@ const path = require('path');
 const webpack = require('webpack');
 const dotenv = require('dotenv');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-const TerserPlugin = require('terser-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin');
 
@@ -24,7 +23,7 @@ if (deployPath) {
 }
 
 // setup environment configuration
-const env = dotenv.config().parsed;
+const env = dotenv.config().parsed || {};
 env.NODE_ENV = JSON.stringify('production');
 const envKeys = Object.keys(env).reduce((prev, next) => {
     prev[`process.env.${next}`] = JSON.stringify(env[next]);
@@ -52,7 +51,6 @@ const getPlugins = () => {
     if (IS_PROD) {
         plugins.push(
             new webpack.DefinePlugin(envKeys),
-            new webpack.HashedModuleIdsPlugin(),
             new webpack.BannerPlugin({
                 banner
             })
@@ -73,7 +71,7 @@ module.exports = () => {
         output: {
             path: path.join(__dirname, 'dist'),
             publicPath: deployPath || './dist/',
-            filename: IS_PROD ? `${outputFileName}.min.js` : `${outputFileName}.js`,
+            filename: IS_PROD ? `${outputFileName}.js` : `${outputFileName}.js`,
             chunkFilename: '[name].js',
             library: [MODULE_NAME],
             libraryExport: 'default',
@@ -82,23 +80,36 @@ module.exports = () => {
             globalObject: 'this'
         },
         resolve: {
-            extensions: ['.js', '.jsx', '.ts', '.tsx']
+            extensions: ['.ts', '.tsx', '.js', '.jsx']
         },
         module: {
             rules: [
                 {
                     test: /\.jsx?$/,
                     loader: 'babel-loader',
-                    exclude: /node_modules/
+                    exclude: /node_modules/,
+                    options: {
+                        configFile: path.resolve(__dirname, 'babel.config.js')
+                    }
                 },
                 {
                     test: /\.tsx?$/,
                     use: [
                         {
-                            loader: 'babel-loader'
+                            loader: 'babel-loader',
+                            options: {
+                                configFile: path.resolve(__dirname, 'babel.config.js')
+                            }
                         },
                         {
-                            loader: 'ts-loader'
+                            loader: 'ts-loader',
+                            options: {
+                                transpileOnly: true,
+                                compilerOptions: {
+                                    module: 'esnext',
+                                    target: 'es6'
+                                }
+                            }
                         }
                     ],
                     exclude: /node_modules/
@@ -106,13 +117,7 @@ module.exports = () => {
             ]
         },
         optimization: {
-            sideEffects: false,
-            minimizer: [
-                new TerserPlugin({
-                    extractComments: false,
-                    exclude: /\/public/
-                })
-            ],
+            minimize: false,
             splitChunks: {
                 automaticNameDelimiter: '-',
                 name(module, chunks, cacheGroupKey) {
@@ -125,7 +130,8 @@ module.exports = () => {
                     return chunkName;
                 }
             },
-            runtimeChunk: false
+            runtimeChunk: false,
+            moduleIds: 'deterministic'
         },
         plugins: getPlugins(),
         devtool: IS_PROD ? 'source-map' : 'inline-source-map',

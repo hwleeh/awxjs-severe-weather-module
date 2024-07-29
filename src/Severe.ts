@@ -1,27 +1,53 @@
 /* eslint-disable max-len */
 import ModuleGroup from '@aerisweather/javascript-sdk/dist/modules/ModuleGroup';
-import IMapSourceModule from '@aerisweather/javascript-sdk/dist/modules/interfaces/IMapSourceModule';
+import IMapSourceModule
+    from '@aerisweather/javascript-sdk/dist/modules/interfaces/IMapSourceModule';
 import InteractiveMapApp from '@aerisweather/javascript-sdk/dist/apps/InteractiveMapApp';
 import InteractiveMap from '@aerisweather/javascript-sdk/dist/maps/interactive/InteractiveMap';
 import Account from '@aerisweather/javascript-sdk/dist/account/Account';
 import ApiRequest from '@aerisweather/javascript-sdk/dist/network/api/ApiRequest';
-import { formatDate, get, isset } from '@aerisweather/javascript-sdk/dist/utils/index';
+import { formatDate, get, isset } from '@aerisweather/javascript-sdk/dist/utils';
 import { toName } from '@aerisweather/javascript-sdk/dist/utils/strings';
 import StormCells from './stormcells/StormCells';
 import StormReports from './stormreports/StormReports';
 import LightningThreats from './lightningthreats/LightningThreats';
 import StormThreats from './stormthreats/StormThreats';
 import Warnings from './warnings/Warnings';
-import { indexForHail, indexForIntensity, round5, getPercent, getIndexString, rotationIntensity } from './utils';
+import {
+    getIndexString,
+    getPercent,
+    indexForHail,
+    indexForHailProbability,
+    indexForIntensity,
+    rotationIntensity,
+    round5
+} from './utils';
+
+type SevereControls = {
+    title?: string;
+    buttons: any[];
+};
+
+type SevereOptions = {
+    showThreats?: boolean;
+    groupTitle?: string;
+    buttons?: string[];
+};
 
 class Severe extends ModuleGroup {
     private _showThreats: boolean = false;
-    private _request: ApiRequest;
+    private _opts: SevereOptions = {};
+    private _groupTitle: string = 'Severe Weather';
+    private _request!: ApiRequest;
 
-    constructor(args: {showThreats: boolean}) {
+    constructor(args?:SevereOptions) {
         super();
 
-        if (args) this._showThreats = args.showThreats;
+        if (args) {
+            this._opts = args;
+            this._showThreats = args.showThreats || false;
+            this._groupTitle = args.groupTitle || 'Severe Weather';
+        }
     }
 
     get id(): string {
@@ -33,31 +59,37 @@ class Severe extends ModuleGroup {
             this._modules = [
                 new Warnings(),
                 new StormCells(),
-                new StormReports(),
                 new StormThreats(),
-                new LightningThreats()
+                new LightningThreats(),
+                new StormReports(),
             ];
             resolve(this._modules);
         });
     }
 
-    controls(): any {
-        const buttons = this.modules ? this.modules.map((m) => m.controls()) : [];
-        // insert raster lightning strikes control in third position
-        buttons.splice(2, 0, {
-            value: 'lightning-strikes-15m-icons',
-            title: 'Lightning Strikes',
-            controls: {
-                settings: [{
-                    type: 'opacity'
-                }]
+    controls(): SevereControls {
+        let buttons = this.modules?.reduce<any[]>((acc, m) => {
+            if (m && typeof m.controls === 'function') {
+                acc.push(m.controls());
             }
-        });
+            return acc;
+        }, []) || [];
 
-        return {
-            title: 'Severe Weather',
+        if(this._opts && this._opts.buttons) {
+            buttons = this._opts.buttons.map((button) => {
+                buttons.find(dict => dict.value === button);
+            })
+                .filter((button) => button !== undefined);
+        }
+
+        let response: SevereControls = {
             buttons
-        };
+        }
+        if (this._groupTitle) {
+            response.title = this._groupTitle;
+        }
+
+        return response;
     }
 
     initialize(account: Account, app: InteractiveMapApp, map?: InteractiveMap) {
@@ -123,6 +155,10 @@ class Severe extends ModuleGroup {
                         ? indexForHail(data.hail.maxSizeIN)
                         : { index: 0, label: 'None' };
 
+                    const hailProb = isset(data.hail)
+                        ? indexForHailProbability(data.hail.prob)
+                        : { index: 0, label: 'None' };
+
                     const rows: any[] = [{
                         type: 'Precip Intensity',
                         indexString: getIndexString(intensity.index),
@@ -134,6 +170,11 @@ class Severe extends ModuleGroup {
                         percent: getPercent(hailSize.index),
                         label: hailSize.label
                     }, {
+                        type: 'Hail Probability',
+                        indexString: getIndexString(hailProb.index),
+                        percent: getPercent(hailProb.index),
+                        label: hailProb.label
+                    },{
                         type: 'Rotation',
                         indexString: getIndexString(rotationScale.index),
                         percent: getPercent(rotationScale.index),
@@ -173,7 +214,8 @@ class Severe extends ModuleGroup {
                     }, {
                         label: 'Tornadoes',
                         value: data.tornadic ? 'Possible' : 'No'
-                    }];
+                    }
+                    ];
 
                     const content = rows.reduce((result, row) => {
                         result.push(`

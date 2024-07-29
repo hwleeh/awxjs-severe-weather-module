@@ -4,78 +4,18 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
 var _MapSourceModule = _interopRequireDefault(require("@aerisweather/javascript-sdk/dist/modules/MapSourceModule"));
-
-var _index = require("@aerisweather/javascript-sdk/dist/utils/index");
-
+var _utils = require("@aerisweather/javascript-sdk/dist/utils");
 var _strings = require("@aerisweather/javascript-sdk/dist/utils/strings");
-
 var _units = require("@aerisweather/javascript-sdk/dist/utils/units");
-
-var _utils = require("../utils");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var __extends = void 0 && (void 0).__extends || function () {
-  var extendStatics = function (d, b) {
-    extendStatics = Object.setPrototypeOf || {
-      __proto__: []
-    } instanceof Array && function (d, b) {
-      d.__proto__ = b;
-    } || function (d, b) {
-      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    };
-
-    return extendStatics(d, b);
-  };
-
-  return function (d, b) {
-    extendStatics(d, b);
-
-    function __() {
-      this.constructor = d;
-    }
-
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-}();
-
-var __assign = void 0 && (void 0).__assign || function () {
-  __assign = Object.assign || function (t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-      s = arguments[i];
-
-      for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-    }
-
-    return t;
-  };
-
-  return __assign.apply(this, arguments);
-};
-
-var StormCells =
-/** @class */
-function (_super) {
-  __extends(StormCells, _super);
-
-  function StormCells() {
-    return _super !== null && _super.apply(this, arguments) || this;
+var _utils2 = require("../utils");
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+class StormCells extends _MapSourceModule.default {
+  get id() {
+    return 'stormcells';
   }
-
-  Object.defineProperty(StormCells.prototype, "id", {
-    get: function () {
-      return 'stormcells';
-    },
-    enumerable: false,
-    configurable: true
-  });
-
-  StormCells.prototype.source = function () {
-    var _this = this;
-
-    var properties = {
+  source() {
+    const properties = {
       id: 'id',
       path: 'points',
       category: 'traits.type',
@@ -86,49 +26,34 @@ function (_super) {
       type: 'vector',
       requiresBounds: true,
       data: {
-        service: function () {
-          return _this.request;
-        },
-        properties: properties,
-        formatter: function (data) {
-          return (0, _utils.formatStormCells)(data);
-        }
+        service: () => this.request,
+        properties,
+        formatter: data => (0, _utils2.formatStormCells)(data)
       },
       style: {
-        marker: function (data) {
-          return (0, _utils.getStormCellMarker)(data);
-        },
-        polyline: function () {
-          return {
-            stroke: {
-              color: '#ffffff',
-              width: 3
-            }
-          };
-        }
+        marker: data => (0, _utils2.getStormCellMarker)(data),
+        polyline: () => ({
+          stroke: {
+            color: '#ffffff',
+            width: 3
+          }
+        })
       }
     };
-  };
-
-  StormCells.prototype.infopanel = function () {
-    var _this = this;
-
+  }
+  infopanel() {
     return {
-      request: function (data) {
-        var locations = (0, _index.get)(data, 'stormcells.forecast.locs') || [];
-
+      request: data => {
+        const locations = (0, _utils.get)(data, 'stormcells.forecast.locs') || [];
         if (!locations || locations.length === 0) {
           return;
         }
-
-        var request = _this.account.api();
-
-        locations.forEach(function (_a) {
-          var lat = _a.lat,
-              long = _a.long;
-
-          var request_ = _this.account.api().endpoint('places').place(lat + "," + long).radius('10mi').fields('place.name,place.state');
-
+        const request = this.account.api();
+        locations.forEach(({
+          lat,
+          long
+        }) => {
+          const request_ = this.account.api().endpoint('places').place(`${lat},${long}`).radius('10mi').fields('place.name,place.state');
           request.addRequest(request_);
         });
         return request;
@@ -136,40 +61,63 @@ function (_super) {
       views: [{
         // place info
         requiresData: true,
-        data: function (data) {
-          if (!(0, _index.get)(data, 'stormcells')) return;
+        data: data => {
+          if (!(0, _utils.get)(data, 'stormcells')) return;
           return data;
         },
-        renderer: function (data) {
-          if (!data) return;
-          var _a = data.stormcells,
-              place = _a.place,
-              movement = _a.movement,
-              _b = _a.traits,
-              traits = _b === void 0 ? {} : _b,
-              metric = data.metric;
-          var placeName = (0, _strings.toName)(place.name) + ", " + place.state.toUpperCase();
-          var movementBlock = (0, _index.isset)(movement) ? "\n                            <div class=\"awxjs__ui-row\">\n                                <div>\n                                    Moving " + movement.dirTo + "\n                                    at " + (0, _units.formatDataValue)(movement, 'speedMPH', 'speedKMH', metric) + "\n                                </div>\n                            </div>\n                        " : '';
-          return "\n                        <div class=\"stormtrack-loc awxjs__app__ui-panel-info__table\">\n                            <div class=\"awxjs__ui-row\">\n                                <div class=\"awxjs__ui-cols align-center\">\n                                    <div class=\"awxjs__ui-expand awxjs__text-lg value\">\n                                        <strong>Near " + placeName + "</strong>\n                                    </div>\n                                    <div>\n                                        <div class=\"indicator\" style=\"background:" + (0, _utils.colorStormCell)(traits.type) + ";\"></div>\n                                    </div>\n                                </div>\n                            </div>\n                            " + movementBlock + "\n                        </div>\n                    ";
+        renderer: data => {
+          if (!data) return '';
+          const {
+            stormcells: {
+              place,
+              movement,
+              traits = {}
+            },
+            metric
+          } = data;
+          const placeName = `${(0, _strings.toName)(place.name)}, ${place.state.toUpperCase()}`;
+          const movementBlock = (0, _utils.isset)(movement) ? `
+                            <div class="awxjs__ui-row">
+                                <div>
+                                    Moving ${movement.dirTo}
+                                    at ${(0, _units.formatDataValue)(movement, 'speedMPH', 'speedKMH', metric)}
+                                </div>
+                            </div>
+                        ` : '';
+          return `
+                        <div class="stormtrack-loc awxjs__app__ui-panel-info__table">
+                            <div class="awxjs__ui-row">
+                                <div class="awxjs__ui-cols align-center">
+                                    <div class="awxjs__ui-expand awxjs__text-lg value">
+                                        <strong>Near ${placeName}</strong>
+                                    </div>
+                                    <div>
+                                        <div class="indicator" style="background:${(0, _utils2.colorStormCell)(traits.type)};"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            ${movementBlock}
+                        </div>
+                    `;
         }
       }, {
         // severity levels
         requiresData: true,
-        data: function (data) {
-          var stormcells = (0, _index.get)(data, 'stormcells');
+        data: data => {
+          const stormcells = (0, _utils.get)(data, 'stormcells');
           if (!stormcells) return;
-          var dbzm = stormcells.dbzm;
-          var result = [];
-
-          if ((0, _index.isset)(dbzm)) {
+          const {
+            dbzm
+          } = stormcells;
+          const result = [];
+          if ((0, _utils.isset)(dbzm)) {
             result.push({
               type: 'intensity',
               name: 'Intensity',
               value: dbzm
             });
           }
-
-          var severity = (0, _utils.getSeverity)(data.stormcells);
+          const severity = (0, _utils2.getSeverity)(data.stormcells);
           result.push({
             type: 'severity',
             name: 'Severity',
@@ -177,107 +125,134 @@ function (_super) {
           });
           return result;
         },
-        renderer: function (data) {
-          var hazards = data.map(function (hazard) {
-            var index = 0;
-            var level = '';
-
+        renderer: data => {
+          const hazards = data.map(hazard => {
+            let index = 0;
+            let level = '';
             if (hazard.type === 'intensity') {
-              var _a = (0, _utils.indexForIntensity)(hazard.value),
-                  hazardIndex = _a.index,
-                  label = _a.label;
-
+              const {
+                index: hazardIndex,
+                label
+              } = (0, _utils2.indexForIntensity)(hazard.value);
               index = hazardIndex;
               level = label;
             } else if (hazard.type === 'severity') {
-              var _b = (0, _utils.indexForSeverity)(hazard.value),
-                  hazardIndex = _b.index,
-                  label = _b.label;
-
+              const {
+                index: hazardIndex,
+                label
+              } = (0, _utils2.indexForSeverity)(hazard.value);
               index = hazardIndex;
               level = label;
             }
-
-            var indexString = ("" + index).replace(/\./g, 'p');
-            var percent = Math.round(index / 5 * 1000) / 10;
-            return "\n                            <div class=\"awxjs__app__ui-panel-info__hazard awxjs__ui-cols align-center\">\n                                <div class=\"awxjs__app__ui-panel-info__hazard-label\">\n                                    " + hazard.name + "\n                                </div>\n                                <div class=\"awxjs__app__ui-panel-info__hazard-bar\n                                    awxjs__app__ui-panel-info__hazard-bar-sm\"\n                                >\n                                    <div class=\"awxjs__app__ui-panel-info__hazard-bar-inner\">\n                                        <div\n                                            class=\"awxjs__app__ui-panel-info__hazard-bar-progress\n                                                awxjs__app__ui-panel-info__hazard-indice-fill-" + indexString + "\"\n                                            style=\"width:" + percent + "%;\"\n                                        ></div>\n                                    </div>\n                                </div>\n                                <div\n                                    class=\"awxjs__app__ui-panel-info__hazard-value\n                                    awxjs__app__ui-panel-info__hazard-value-lg\n                                        awxjs__app__ui-panel-info__hazard-value-" + indexString + "\"\n                                    >" + level + "</div>\n                            </div>\n                        ";
+            const indexString = `${index}`.replace(/\./g, 'p');
+            const percent = Math.round(index / 5 * 1000) / 10;
+            return `
+                            <div class="awxjs__app__ui-panel-info__hazard awxjs__ui-cols align-center">
+                                <div class="awxjs__app__ui-panel-info__hazard-label">
+                                    ${hazard.name}
+                                </div>
+                                <div class="awxjs__app__ui-panel-info__hazard-bar
+                                    awxjs__app__ui-panel-info__hazard-bar-sm"
+                                >
+                                    <div class="awxjs__app__ui-panel-info__hazard-bar-inner">
+                                        <div
+                                            class="awxjs__app__ui-panel-info__hazard-bar-progress
+                                                awxjs__app__ui-panel-info__hazard-indice-fill-${indexString}"
+                                            style="width:${percent}%;"
+                                        ></div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="awxjs__app__ui-panel-info__hazard-value
+                                    awxjs__app__ui-panel-info__hazard-value-lg
+                                        awxjs__app__ui-panel-info__hazard-value-${indexString}"
+                                    >${level}</div>
+                            </div>
+                        `;
           });
-          return "\n                        <div class=\"awxjs__app__ui-panel-info__hazards\">\n                            " + hazards.join('') + "\n                        </div>\n                    ";
+          return `
+                        <div class="awxjs__app__ui-panel-info__hazards">
+                            ${hazards.join('')}
+                        </div>
+                    `;
         }
       }, {
         // forecast track
         title: 'Forecast Track',
         requiresData: true,
-        data: function (data) {
-          var locations = (0, _index.get)(data, 'stormcells.forecast.locs');
-          if (!locations) return; // filter out invalid place results
-
-          var places = locations.map(function (loc) {
-            var key = "places_" + loc.lat + "_" + loc.long;
-            var place = data[key];
-
-            if (place && (0, _index.isset)(place.place)) {
-              return __assign({
+        data: data => {
+          const locations = (0, _utils.get)(data, 'stormcells.forecast.locs');
+          if (!locations) return;
+          // filter out invalid place results
+          const places = locations.map(loc => {
+            const key = `places_${loc.lat}_${loc.long}`;
+            const place = data[key];
+            if (place && (0, _utils.isset)(place.place)) {
+              return Object.assign({
                 timestamp: loc.timestamp
               }, place);
             }
-
             return false;
-          }).filter(function (v) {
-            return v;
-          });
+          }).filter(v => v);
           if (places.length === 0) return;
           data.locations = places;
           return data;
         },
-        renderer: function (data) {
-          var locations = (0, _index.get)(data, 'locations') || [];
-          var names = [];
-          var rows = locations.map(function (loc) {
-            var place = loc.place,
-                timestamp = loc.timestamp;
-
+        renderer: data => {
+          const locations = (0, _utils.get)(data, 'locations') || [];
+          const names = [];
+          const rows = locations.map(loc => {
+            const {
+              place,
+              timestamp
+            } = loc;
             if (names.includes(place.name)) {
               return;
             }
-
             names.push(place.name);
-            var time = (0, _index.formatDate)(new Date(timestamp * 1000), 'h:mm a');
-            return "\n                            <div class=\"awxjs__ui-row\">\n                                <div class=\"awxjs__ui-expand label\">" + place.name + "</div>\n                                <div class=\"awxjs__ui-expand value\">" + time + "</div>\n                            </div>\n                        ";
+            const time = (0, _utils.formatDate)(new Date(timestamp * 1000), 'h:mm a');
+            return `
+                            <div class="awxjs__ui-row">
+                                <div class="awxjs__ui-expand label">${place.name}</div>
+                                <div class="awxjs__ui-expand value">${time}</div>
+                            </div>
+                        `;
           });
-          return "\n                        <div class=\"awxjs__app__ui-panel-info__table awxjs__table\">\n                            " + rows.filter(function (v) {
-            return typeof v !== 'undefined';
-          }).join('\n') + "\n                        </div>\n                    ";
+          return `
+                        <div class="awxjs__app__ui-panel-info__table awxjs__table">
+                            ${rows.filter(v => typeof v !== 'undefined').join('\n')}
+                        </div>
+                    `;
         }
       }, {
         // details
         requiresData: true,
-        data: function (data) {
-          var payload = (0, _index.get)(data, 'stormcells');
-
+        data: data => {
+          const payload = (0, _utils.get)(data, 'stormcells');
           if (!payload) {
             return;
           }
-
           return payload;
         },
-        renderer: function (data) {
-          var metric = data.metric,
-              timestamp = data.timestamp,
-              radarID = data.radarID,
-              dbzm = data.dbzm,
-              tvs = data.tvs,
-              mda = data.mda,
-              vil = data.vil;
-          var rows = [{
+        renderer: data => {
+          const {
+            metric,
+            timestamp,
+            radarID,
+            dbzm,
+            tvs,
+            mda,
+            vil
+          } = data;
+          const rows = [{
             label: 'Observed',
-            value: (0, _index.formatDate)(new Date(timestamp * 1000), 'h:mm a, MMM d, yyyy')
+            value: (0, _utils.formatDate)(new Date(timestamp * 1000), 'h:mm a, MMM d, yyyy')
           }, {
             label: 'Radar Station',
             value: radarID
           }, {
             label: 'Max Reflectivity',
-            value: dbzm + " dbz"
+            value: `${dbzm} dbz`
           }, {
             label: 'Echo Top',
             value: (0, _units.formatDataValue)(data, 'topFT', 'topM', metric)
@@ -286,10 +261,10 @@ function (_super) {
             value: tvs === 1 ? 'Yes' : 'No'
           }, {
             label: 'Hail',
-            value: ((0, _index.get)(data, 'hail.prob') || 0) + "% Probability"
+            value: `${(0, _utils.get)(data, 'hail.prob') || 0}% Probability`
           }, {
             label: 'Severe Hail',
-            value: ((0, _index.get)(data, 'hail.probSevere') || 0) + "% Probability"
+            value: `${(0, _utils.get)(data, 'hail.probSevere') || 0}% Probability`
           }, {
             label: 'Max Hail Size',
             value: (0, _units.formatDataValue)(data, 'hail.maxSizeIN', 'hail.maxSizeCM', metric)
@@ -300,17 +275,25 @@ function (_super) {
             label: 'VIL',
             value: vil
           }];
-          var content = rows.reduce(function (result, row) {
-            result.push("\n                            <div class=\"awxjs__ui-row\">\n                                <div class=\"awxjs__ui-expand awxjs__text-sm label\">" + row.label + "</div>\n                                <div class=\"awxjs__ui-expand value\">" + row.value + "</div>\n                            </div>\n                        ");
+          const content = rows.reduce((result, row) => {
+            result.push(`
+                            <div class="awxjs__ui-row">
+                                <div class="awxjs__ui-expand awxjs__text-sm label">${row.label}</div>
+                                <div class="awxjs__ui-expand value">${row.value}</div>
+                            </div>
+                        `);
             return result;
           }, []).join('\n');
-          return "\n                        <div class=\"awxjs__app__ui-panel-info__table awxjs__table awxjs__table-bordered\">\n                            " + content + "\n                        </div>\n                    ";
+          return `
+                        <div class="awxjs__app__ui-panel-info__table awxjs__table awxjs__table-bordered">
+                            ${content}
+                        </div>
+                    `;
         }
       }]
     };
-  };
-
-  StormCells.prototype.controls = function () {
+  }
+  controls() {
     return {
       value: this.id,
       title: 'Storm Tracks',
@@ -330,29 +313,25 @@ function (_super) {
         title: 'Tornadic'
       }]
     };
-  };
-
-  StormCells.prototype.onInit = function () {
-    var request = this.account.api().endpoint('stormcells');
+  }
+  onInit() {
+    const request = this.account.api().endpoint('stormcells');
     this.request = request;
-  };
-
-  StormCells.prototype.onMarkerClick = function (marker, data) {
+  }
+  onMarkerClick(marker, data) {
     if (!data) return;
-    var id = data.id,
-        radarID = data.radarID,
-        cellID = data.cellID;
-    var cellId = radarID + "_" + cellID;
-    this.showInfoPanel("Cell " + cellId).load({
+    const {
+      id,
+      radarID,
+      cellID
+    } = data;
+    const cellId = `${radarID}_${cellID}`;
+    this.showInfoPanel(`Cell ${cellId}`).load({
       p: id
     }, {
       stormcells: data
     });
-  };
-
-  return StormCells;
-}(_MapSourceModule.default);
-
-var _default = StormCells;
-exports.default = _default;
+  }
+}
+var _default = exports.default = StormCells;
 module.exports = exports.default;

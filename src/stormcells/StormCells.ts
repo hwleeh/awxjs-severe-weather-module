@@ -1,6 +1,8 @@
-import MapSourceModule from '@aerisweather/javascript-sdk/dist/modules/MapSourceModule';
+import MapSourceModule, {
+    MapSourceModuleOptions
+} from '@aerisweather/javascript-sdk/dist/modules/MapSourceModule';
 import ApiRequest from '@aerisweather/javascript-sdk/dist/network/api/ApiRequest';
-import { formatDate, get, isset } from '@aerisweather/javascript-sdk/dist/utils/index';
+import { formatDate, get, isset } from '@aerisweather/javascript-sdk/dist/utils';
 import { toName } from '@aerisweather/javascript-sdk/dist/utils/strings';
 import { formatDataValue } from '@aerisweather/javascript-sdk/dist/utils/units';
 import { colorStormCell,
@@ -11,8 +13,8 @@ import { colorStormCell,
     indexForSeverity } from '../utils';
 
 
-class StormCells extends MapSourceModule {
-    private request: ApiRequest;
+class StormCells extends MapSourceModule<MapSourceModuleOptions> {
+    private request!: ApiRequest;
 
     get id() {
         return 'stormcells';
@@ -78,7 +80,7 @@ class StormCells extends MapSourceModule {
                     return data;
                 },
                 renderer: (data: any): string => {
-                    if (!data) return;
+                    if (!data) return  '';
 
                     const {
                         stormcells: {

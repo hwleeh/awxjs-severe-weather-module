@@ -1,7 +1,9 @@
-import MapSourceModule from '@aerisweather/javascript-sdk/dist/modules/MapSourceModule';
+import MapSourceModule, {
+    MapSourceModuleOptions
+} from '@aerisweather/javascript-sdk/dist/modules/MapSourceModule';
 import ApiRequest from '@aerisweather/javascript-sdk/dist/network/api/ApiRequest';
 import { ucwords } from '@aerisweather/javascript-sdk/dist/utils/strings';
-import { formatDate, get } from '@aerisweather/javascript-sdk/dist/utils/index';
+import { formatDate, get } from '@aerisweather/javascript-sdk/dist/utils';
 import { getMagnitude } from '../utils';
 
 const color = (code: string): string => {
@@ -37,8 +39,8 @@ const color = (code: string): string => {
     }
 };
 
-class StormReports extends MapSourceModule {
-    private request: ApiRequest;
+class StormReports extends MapSourceModule<MapSourceModuleOptions> {
+    private request!: ApiRequest;
 
     get id(): string {
         return 'stormreports';

@@ -1,21 +1,23 @@
 module.exports = {
-	presets: [
-		['@babel/preset-env', {
-			targets: {
-				browsers: [
-					'> 0.25%',
-					'not dead',
-					'not ie < 11'
-				]
-			},
-			corejs: { version: 3 }
-		}]
-	],
-	plugins: [
-		'@babel/plugin-proposal-class-properties',
-		'@babel/plugin-proposal-object-rest-spread',
-		'@babel/plugin-syntax-dynamic-import',
-		'@babel/plugin-transform-runtime',
-		'add-module-exports'
-	]
+    presets: [
+        ['@babel/preset-env', {
+            targets: {
+                esmodules: true
+            },
+            useBuiltIns: false,
+            corejs: false,
+            modules: false // This prevents transformation of ES6 modules to CommonJS
+        }],
+        ['@babel/preset-typescript', {
+            allowNamespaces: true
+        }]
+    ],
+    plugins: [
+        ['@babel/plugin-transform-typescript', {
+            allowDeclareFields: true
+        }],
+        ['@babel/plugin-proposal-class-properties', { loose: true }],
+        '@babel/plugin-proposal-object-rest-spread',
+        '@babel/plugin-syntax-dynamic-import'
+    ]
 };

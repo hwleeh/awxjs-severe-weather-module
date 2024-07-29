@@ -4,119 +4,57 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
 var _MapSourceModule = _interopRequireDefault(require("@aerisweather/javascript-sdk/dist/modules/MapSourceModule"));
-
 var _strings = require("@aerisweather/javascript-sdk/dist/utils/strings");
-
-var _index = require("@aerisweather/javascript-sdk/dist/utils/index");
-
-var _utils = require("../utils");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var __extends = void 0 && (void 0).__extends || function () {
-  var extendStatics = function (d, b) {
-    extendStatics = Object.setPrototypeOf || {
-      __proto__: []
-    } instanceof Array && function (d, b) {
-      d.__proto__ = b;
-    } || function (d, b) {
-      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    };
-
-    return extendStatics(d, b);
-  };
-
-  return function (d, b) {
-    extendStatics(d, b);
-
-    function __() {
-      this.constructor = d;
-    }
-
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-}();
-
-var color = function (code) {
+var _utils = require("@aerisweather/javascript-sdk/dist/utils");
+var _utils2 = require("../utils");
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+const color = code => {
   code = code.toLowerCase();
-
   switch (code) {
     case 'avalanche':
       return '#639fec';
-
     case 'blizzard':
       return '#4100e2';
-
     case 'flood':
       return '#117d00';
-
     case 'fog':
       return '#767676';
-
     case 'ice':
       return '#e100e2';
-
     case 'hail':
       return '#62def7';
-
     case 'lightning':
       return '#8c8c8c';
-
     case 'rain':
       return '#38e600';
-
     case 'snow':
       return '#175cef';
-
     case 'tides':
       return '#40db83';
-
     case 'tornado':
       return '#c50000';
-
     case 'wind':
       return '#d8cc00';
-
     default:
       return '#000000';
   }
 };
-
-var StormReports =
-/** @class */
-function (_super) {
-  __extends(StormReports, _super);
-
-  function StormReports() {
-    return _super !== null && _super.apply(this, arguments) || this;
+class StormReports extends _MapSourceModule.default {
+  get id() {
+    return 'stormreports';
   }
-
-  Object.defineProperty(StormReports.prototype, "id", {
-    get: function () {
-      return 'stormreports';
-    },
-    enumerable: false,
-    configurable: true
-  });
-
-  StormReports.prototype.source = function () {
-    var _this = this;
-
+  source() {
     return {
       type: 'vector',
       requreBounds: true,
       data: {
-        service: function () {
-          return _this.request;
-        }
+        service: () => this.request
       },
       style: {
-        marker: function (data) {
+        marker: data => {
           var _a;
-
-          var type = (_a = data === null || data === void 0 ? void 0 : data.report) === null || _a === void 0 ? void 0 : _a.cat;
+          const type = (_a = data === null || data === void 0 ? void 0 : data.report) === null || _a === void 0 ? void 0 : _a.cat;
           return {
             className: 'marker-stormreport',
             svg: {
@@ -136,32 +74,27 @@ function (_super) {
         }
       }
     };
-  };
-
-  StormReports.prototype.controls = function () {
+  }
+  controls() {
     return {
       value: this.id,
       title: 'Storm Reports'
     };
-  };
-
-  StormReports.prototype.infopanel = function () {
+  }
+  infopanel() {
     return {
       views: [{
-        data: function (data) {
-          var payload = data === null || data === void 0 ? void 0 : data.stormreports;
-
+        data: data => {
+          const payload = data === null || data === void 0 ? void 0 : data.stormreports;
           if (!payload) {
             return;
           }
-
           return payload;
         },
-        renderer: function (data) {
+        renderer: data => {
           var _a, _b, _c;
-
           if (!data) return;
-          var rows = [{
+          const rows = [{
             label: 'Location',
             value: (_a = data.report) === null || _a === void 0 ? void 0 : _a.name
           }, {
@@ -169,44 +102,49 @@ function (_super) {
             value: (0, _strings.ucwords)((_b = data.report) === null || _b === void 0 ? void 0 : _b.type)
           }, {
             label: 'Magnitude',
-            value: (0, _utils.getMagnitude)(data.report)
+            value: (0, _utils2.getMagnitude)(data.report)
           }, {
             label: 'Report Time',
-            value: (0, _index.formatDate)(new Date(((_c = data.report) === null || _c === void 0 ? void 0 : _c.timestamp) * 1000), 'h:mm a, MMM d, yyyy')
+            value: (0, _utils.formatDate)(new Date(((_c = data.report) === null || _c === void 0 ? void 0 : _c.timestamp) * 1000), 'h:mm a, MMM d, yyyy')
           }, {
             label: 'Remarks',
             value: data.report.comments || ''
           }];
-          var content = rows.reduce(function (result, row) {
-            result.push("\n                                <div class=\"awxjs__ui-row\">\n                                    <div class=\"awxjs__ui-expand label\">" + row.label + "</div>\n                                    <div class=\"awxjs__ui-expand value\">" + row.value + "</div>\n                                </div>\n                            ");
+          const content = rows.reduce((result, row) => {
+            result.push(`
+                                <div class="awxjs__ui-row">
+                                    <div class="awxjs__ui-expand label">${row.label}</div>
+                                    <div class="awxjs__ui-expand value">${row.value}</div>
+                                </div>
+                            `);
             return result;
           }, []).join('\n');
-          return "\n                        <div class=\"awxjs__app__ui-panel-info__table\">\n                            " + content + "\n                        </div>\n                    ";
+          return `
+                        <div class="awxjs__app__ui-panel-info__table">
+                            ${content}
+                        </div>
+                    `;
         }
       }]
     };
-  };
-
-  StormReports.prototype.onMarkerClick = function (marker, data) {
+  }
+  onMarkerClick(marker, data) {
     if (!data) return;
-    var id = data.id,
-        report = data.report;
-    var type = (0, _strings.ucwords)(report.type);
-    this.showInfoPanel("" + type).load({
+    const {
+      id,
+      report
+    } = data;
+    const type = (0, _strings.ucwords)(report.type);
+    this.showInfoPanel(`${type}`).load({
       p: id
     }, {
       stormreports: data
     });
-  };
-
-  StormReports.prototype.onInit = function () {
-    var request = this.account.api().endpoint('stormreports');
+  }
+  onInit() {
+    const request = this.account.api().endpoint('stormreports');
     this.request = request;
-  };
-
-  return StormReports;
-}(_MapSourceModule.default);
-
-var _default = StormReports;
-exports.default = _default;
+  }
+}
+var _default = exports.default = StormReports;
 module.exports = exports.default;

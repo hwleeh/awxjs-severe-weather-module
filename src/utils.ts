@@ -81,6 +81,32 @@ export const getSeverity = (cell: any = {}): number => {
     return severity;
 };
 
+export const getStormCellPolygon = (data: any): any => {
+    const { isCurrent } = data;
+    const { isLast } = data;
+    const type: string = get(data, 'traits.type');
+    const cone: any = data;
+    if (!cone) {
+        return null;
+    }
+
+    return {
+        className: 'polygon-stormcell',
+
+        fill: {
+            color: colorStormCell(type),
+            opacity: isCurrent ? 0.5 : 0.25
+        },
+        stroke: {
+            color: colorStormCell(type),
+            width: 1
+        },
+    }
+
+
+}
+
+
 export const getStormCellMarker = (data: any): any => {
     const { isCurrent } = data;
     const { isLast } = data;
@@ -135,6 +161,31 @@ export const getPercent = (index: any): any => {
 }
  export const round5 = (x: any): any => {
     return Math.ceil(x/5)*5;
+}
+
+export const indexForHailProbability = (value: number): any => {
+    if (value >= 90) {
+        return { index: 5, label: `Likely (${value}%)` };
+    }
+
+    if (value >= 70) {
+        return { index: 4, label: `High (${value}%)` };
+    }
+
+    if (value >= 50) {
+        return { index: 3, label: `Moderate (${value}%)` };
+    }
+
+    if (value >= 30) {
+        return { index: 2, label: `Low (${value}%)` };
+    }
+
+    if (value >= 10) {
+        return { index: 1, label: `Very Low (${value}%)` };
+    }
+
+    return { index: 0, label: 'None' };
+
 }
 
 export const rotationIntensity = (value: number): any => {
@@ -236,6 +287,7 @@ export const formatStormCells = (data: any): any => {
             let { points } = cell;
             const startLat = loc.lat;
             const startLng = loc.long;
+            let conePolygon: any = null;
 
             points = [{
                 id,
@@ -277,6 +329,7 @@ export const formatStormCells = (data: any): any => {
                     }
                 });
             }
+
 
             cell.points = points;
         });

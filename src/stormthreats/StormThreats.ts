@@ -1,8 +1,10 @@
-import MapSourceModule from '@aerisweather/javascript-sdk/dist/modules/MapSourceModule';
+import MapSourceModule, {
+    MapSourceModuleOptions
+} from '@aerisweather/javascript-sdk/dist/modules/MapSourceModule';
 import ApiRequest from '@aerisweather/javascript-sdk/dist/network/api/ApiRequest';
 
-class StormThreats extends MapSourceModule {
-    private request: ApiRequest;
+class StormThreats extends MapSourceModule<MapSourceModuleOptions> {
+    private request!: ApiRequest;
 
     get id() {
         return 'stormthreats';
@@ -25,7 +27,7 @@ class StormThreats extends MapSourceModule {
                 polygon: () => ({
                     fill: {
                         color: '#ffa500',
-                        opacity: 0.65
+                        opacity: 0.85
                     }
                 })
             }
@@ -35,12 +37,30 @@ class StormThreats extends MapSourceModule {
     controls(): any {
         return {
             value: this.id,
-            title: 'Storm Threats',
+            title: 'Storm Zones',
             controls: {
                 settings: [{
                     type: 'opacity'
                 }]
-            }
+            },
+            filter: true,
+            multiselect: false,
+            segments: [ {
+                value: 'threat',
+                title: 'Threatening'
+            },{
+                value: 'hail',
+                title: 'Hail'
+            }, {
+                value: 'rotating',
+                title: 'Rotating'
+            }, {
+                value: 'tornado',
+                title: 'Tornadic'
+            },{
+                value: 'all',
+                title: 'All Storms'
+            }]
         };
     }
 
@@ -50,7 +70,7 @@ class StormThreats extends MapSourceModule {
             .endpoint('stormcells/summary')
             .format('geojson')
             .limit(1)
-            .filter('threat,geo');
+            .filter('geo');
         this.request = request;
     }
 }

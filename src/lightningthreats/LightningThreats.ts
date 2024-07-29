@@ -1,8 +1,10 @@
-import MapSourceModule from '@aerisweather/javascript-sdk/dist/modules/MapSourceModule';
+import MapSourceModule, {
+    MapSourceModuleOptions
+} from '@aerisweather/javascript-sdk/dist/modules/MapSourceModule';
 import ApiRequest from '@aerisweather/javascript-sdk/dist/network/api/ApiRequest';
 
-class LightningThreats extends MapSourceModule {
-    private request: ApiRequest;
+class LightningThreats extends MapSourceModule<MapSourceModuleOptions> {
+    private request!: ApiRequest;
 
     get id(): string {
         return 'lightningthreats';
@@ -24,8 +26,8 @@ class LightningThreats extends MapSourceModule {
             style: {
                 polygon: () => ({
                     fill: {
-                        color: '#FFDB00',
-                        opacity: 0.6
+                        color: '#f3e9b2',
+                        opacity: 0.85
                     }
                 })
             }
@@ -35,7 +37,7 @@ class LightningThreats extends MapSourceModule {
     controls(): any {
         return {
             value: this.id,
-            title: 'Lightning Threats',
+            title: 'Lightning Zones',
             controls: {
                 settings: [{
                     type: 'opacity'
@@ -49,7 +51,7 @@ class LightningThreats extends MapSourceModule {
             .api()
             .endpoint('lightning/summary')
             .format('geojson')
-            .filter('threat,geo')
+            .filter('geo')
             .from('-15minutes');
         this.request = request;
     }

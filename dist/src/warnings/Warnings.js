@@ -4,66 +4,20 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
 var _MapSourceModule = _interopRequireDefault(require("@aerisweather/javascript-sdk/dist/modules/MapSourceModule"));
-
 var utils = _interopRequireWildcard(require("@aerisweather/javascript-sdk/dist/utils/index"));
-
 var _strings = require("@aerisweather/javascript-sdk/dist/utils/strings");
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var __extends = void 0 && (void 0).__extends || function () {
-  var extendStatics = function (d, b) {
-    extendStatics = Object.setPrototypeOf || {
-      __proto__: []
-    } instanceof Array && function (d, b) {
-      d.__proto__ = b;
-    } || function (d, b) {
-      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    };
-
-    return extendStatics(d, b);
-  };
-
-  return function (d, b) {
-    extendStatics(d, b);
-
-    function __() {
-      this.constructor = d;
-    }
-
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-}();
-
-var Warnings =
-/** @class */
-function (_super) {
-  __extends(Warnings, _super);
-
-  function Warnings() {
-    return _super !== null && _super.apply(this, arguments) || this;
+var _utils = require("@aerisweather/javascript-sdk/dist/utils");
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+class Warnings extends _MapSourceModule.default {
+  get id() {
+    var _a;
+    return ((_a = this.opts) === null || _a === void 0 ? void 0 : _a.id) || 'warnings';
   }
-
-  Object.defineProperty(Warnings.prototype, "id", {
-    get: function () {
-      var _a;
-
-      return ((_a = this.opts) === null || _a === void 0 ? void 0 : _a.id) || 'warnings';
-    },
-    enumerable: false,
-    configurable: true
-  });
-
-  Warnings.prototype.source = function () {
-    var _this = this;
-
-    var properties = {
+  source() {
+    const properties = {
       root: 'features',
       id: 'properties.details.loc',
       category: 'properties.details.cat',
@@ -72,80 +26,65 @@ function (_super) {
     return {
       type: 'vector',
       data: {
-        service: function () {
-          return _this.request;
-        },
-        properties: properties
+        service: () => this.request,
+        properties
       },
       style: {
-        polygon: function (item) {
-          return {
-            fill: {
-              color: "#" + utils.get(item, 'properties.details.color'),
-              opacity: 0.4,
-              weight: 3
-            },
-            stroke: {
-              color: "#" + utils.get(item, 'properties.details.color'),
-              width: 2,
-              weight: 3,
-              adjustOpacity: false
-            }
-          };
-        }
+        polygon: item => ({
+          fill: {
+            color: `#${utils.get(item, 'properties.details.color')}`,
+            opacity: 0.75,
+            weight: 3
+          },
+          stroke: {
+            color: `#${utils.get(item, 'properties.details.color')}`,
+            width: 2,
+            weight: 3,
+            adjustOpacity: false
+          }
+        })
       }
     };
-  };
-
-  Warnings.prototype.controls = function () {
+  }
+  controls() {
     return {
       value: this.id,
-      title: 'Warnings',
+      title: 'Severe Warnings',
       controls: {
         settings: [{
           type: 'opacity'
         }]
       }
     };
-  };
-
-  Warnings.prototype.infopanel = function () {
+  }
+  infopanel() {
     return {
       views: [{
-        data: function (data) {
-          if (!(0, utils.isset)(data)) return;
+        data: data => {
+          if (!(0, _utils.isset)(data)) return;
           data = data.alert.details;
           return data;
         },
-        renderer: function (data) {
-          if (!(0, utils.isset)(data)) return;
-          return "<div class=\"alert\">" + (data.body || '').replace(/\n/g, '<br>') + "</div>";
+        renderer: data => {
+          if (!(0, _utils.isset)(data)) return;
+          return `<div class="alert">${(data.body || '').replace(/\n/g, '<br>')}</div>`;
         }
       }]
     };
-  };
-
-  Warnings.prototype.onInit = function () {
-    var request = this.account.api().endpoint('advisories').action("search"
-    /* SEARCH */
-    ).filter('usa').query('type:TO.W;type:SV.W;type:FF.W;').fields('details.type,details.name,details.body,details,geoPoly').limit(100).format('geojson');
+  }
+  onInit() {
+    const request = this.account.api().endpoint('advisories').action('search').filter('usa').query('type:TO.W;type:SV.W;type:FF.W;').fields('details.type,details.name,details.body,details,geoPoly').limit(100).format('geojson');
     this.request = request;
-  };
-
-  Warnings.prototype.onShapeClick = function (shape, data) {
-    var source = data.awxjs_source;
-    var props = data.properties || {};
-
+  }
+  onShapeClick(shape, data) {
+    const source = data.awxjs_source;
+    const props = data.properties || {};
     if (source === 'warnings') {
-      this.showInfoPanel(props.details.name).load("" + (0, _strings.toName)(props.details.name), {
+      this.showInfoPanel(props.details.name).load(`${(0, _strings.toName)(props.details.name)}`, {
         alert: props
       });
     }
-  };
-
-  return Warnings;
-}(_MapSourceModule.default);
-
-var _default = Warnings;
-exports.default = _default;
+  }
+}
+var _default = exports.default = Warnings;
 module.exports = exports.default;

@@ -1,11 +1,13 @@
-import MapSourceModule from '@aerisweather/javascript-sdk/dist/modules/MapSourceModule';
-import ApiRequest, { ApiAction } from '@aerisweather/javascript-sdk/dist/network/api/ApiRequest';
+import MapSourceModule, {
+    MapSourceModuleOptions
+} from '@aerisweather/javascript-sdk/dist/modules/MapSourceModule';
+import ApiRequest from '@aerisweather/javascript-sdk/dist/network/api/ApiRequest';
 import * as utils from '@aerisweather/javascript-sdk/dist/utils/index';
 import { toName } from '@aerisweather/javascript-sdk/dist/utils/strings';
-import { isset } from '@aerisweather/javascript-sdk/dist/utils/index';
+import { isset } from '@aerisweather/javascript-sdk/dist/utils';
 
-class Warnings extends MapSourceModule {
-    private request: ApiRequest;
+class Warnings extends MapSourceModule<MapSourceModuleOptions> {
+    private request!: ApiRequest;
 
     get id(): string {
         return this.opts?.id || 'warnings';
@@ -29,7 +31,7 @@ class Warnings extends MapSourceModule {
                 polygon: (item: any) => ({
                     fill: {
                         color: `#${utils.get(item, 'properties.details.color')}`,
-                        opacity: 0.4,
+                        opacity: 0.75,
                         weight: 3
                     },
                     stroke: {
@@ -46,7 +48,7 @@ class Warnings extends MapSourceModule {
     controls(): any {
         return {
             value: this.id,
-            title: 'Warnings',
+            title: 'Severe Warnings',
             controls: {
                 settings: [{
                     type: 'opacity'
@@ -76,7 +78,7 @@ class Warnings extends MapSourceModule {
     onInit() {
         const request = this.account.api()
             .endpoint('advisories')
-            .action(ApiAction.SEARCH)
+            .action('search' as any)
             .filter('usa')
             .query('type:TO.W;type:SV.W;type:FF.W;')
             .fields('details.type,details.name,details.body,details,geoPoly')
